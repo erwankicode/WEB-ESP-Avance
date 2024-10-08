@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-const char *ssid = "MonWifi";
-const char *password = "amogus666";
+const char *ssid = "Wifi_Name";
+const char *password = "PassWord";
 // Set LED GPIO
 const int ledPin = 2; // Led intégrée à l'ESP32
 // Stores LED state
