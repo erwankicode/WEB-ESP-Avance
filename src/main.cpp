@@ -1,66 +1,68 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-
-const char* ssid = "Wifi_Name";
-const char* password = "Password";
+const char *ssid = "MonWifi";
+const char *password = "amogus666";
 // Set LED GPIO
-const int ledPin = 2;
+const int ledPin = 2; // Led intégrée à l'ESP32
 // Stores LED state
 String ledState;
-// Create AsyncWebServer object on port 80
+// Potentiomètre relié à GPIO 34 (Analog ADC1_CH6)
+const int potPin = 34;
+
 AsyncWebServer server(80);
-// Replaces placeholder with LED state value
+//Remplace l'espace réservé repéré par des % dans le fichier index.html par
+String(mesure);
 String processor(const String& var){
+float mesure;
+mesure = analogRead(potPin);
 Serial.println(var);
-if(var == "STATE"){
-if(digitalRead(2)){
-ledState = "MARCHE";
-}
-else{
-ledState = "ARRET";
-}
-Serial.print(ledState);
-return ledState;
-}
-return String();
+Serial.println(String(mesure));
+return String(mesure);
 }
 void setup(){
-// Serial port for debugging purposes
 Serial.begin(115200);
 pinMode(2, OUTPUT);
-// Initialize SPIFFS
-if(!SPIFFS.begin(true)){
-Serial.println("An Error has occurred while mounting SPIFFS");
+//---------------------------SPIFFS-------------------
+if(!SPIFFS.begin()) /* Démarrage du gestionnaire de fichiers SPIFFS */
+{
+Serial.println("Erreur SPIFFS...");
 return;
 }
-// Connect to Wi-Fi
-WiFi.begin(ssid, password);
-while (WiFi.status() != WL_CONNECTED) {
-delay(1000);
-Serial.println("Connecting to WiFi..");
+
+//-----------------------WIFI-----------------------------
+WiFi.begin(ssid, password); /* Connexion au réseau Wifi */
+Serial.print("Tentative de connexion...");
+while(WiFi.status() != WL_CONNECTED)
+{
+Serial.print(".");
+delay(100);
 }
-// Print ESP32 Local IP Address
+Serial.println("\n");
+Serial.println("Connexion etablie!");
+Serial.print("Adresse IP: ");
 Serial.println(WiFi.localIP());
-// Route for root / web page
+
+//--------------------------SERVEUR--------------------------
+/* Lorsque le serveur est actif , la page index.html est chargée */
 server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
 request->send(SPIFFS, "/index.html", String(), false, processor);
 });
-// Route to load style.css file
+// Chemin pour chager le fichier style.css
 server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
 request->send(SPIFFS, "/style.css", "text/css");
 });
-// Route to set GPIO to HIGH
+// Page pour allumer la led
 server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request){
 digitalWrite(ledPin, HIGH);
 request->send(SPIFFS, "/index.html", String(), false, processor);
 });
-// Route to set GPIO to LOW
+// Page pour éteindre la led
 server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request){
 digitalWrite(ledPin, LOW);
 request->send(SPIFFS, "/index.html", String(), false, processor);
 });
-// Start server
+// Démarrage du serveur
 server.begin();
 }
 void loop(){
