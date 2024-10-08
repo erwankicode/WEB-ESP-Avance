@@ -1,18 +1,16 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-
 const char *ssid = "MonWifi";
 const char *password = "amogus666";
 const int led = 2; // Led intégrée à l'ESP32
 AsyncWebServer server(80);
 void setup()
 {
-Serial.begin(9600);
-Serial.println("\n");
+Serial.begin(115200);
 pinMode(led, OUTPUT);
 digitalWrite(led, LOW);
-//--------------------------SPIFFS---------------------
+//---------------------------SPIFFS-------------------
 if(!SPIFFS.begin()) /* Démarrage du gestionnaire de fichiers SPIFFS */
 {
 Serial.println("Erreur SPIFFS...");
@@ -29,7 +27,7 @@ Serial.println(file.name());
 file.close();
 file = root.openNextFile(); /* Lecture du fichier suivant */
 }
-//--------------------------WIFI------------------------
+//-----------------------WIFI-----------------------------
 WiFi.begin(ssid, password); /* Connexion au réseau Wifi */
 Serial.print("Tentative de connexion...");
 while(WiFi.status() != WL_CONNECTED)
@@ -41,14 +39,12 @@ Serial.println("\n");
 Serial.println("Connexion etablie!");
 Serial.print("Adresse IP: ");
 Serial.println(WiFi.localIP());
-
-//---------------------------------SERVEUR ------------------------------
+//--------------------------SERVEUR--------------------------
 /* Lorsque le serveur est actif , la page index.html est chargée */
 server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 {
 request->send(SPIFFS, "/index.html", "text/html");
 });
-
 /* Lorsque l'on clique sur ON, on allume la led */
 server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
 {
@@ -61,7 +57,6 @@ server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
 digitalWrite(led, LOW);
 request->send(SPIFFS, "/index.html", "text/html");
 });
-
 /* On affiche que le serveur est actif */
 server.begin();
 Serial.println("Serveur actif!");
