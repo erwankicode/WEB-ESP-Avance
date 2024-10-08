@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-const char *ssid = "MonWifi";
-const char *password = "amogus666";
+const char *ssid = "Wifi_Name";
+const char *password = "SSID";
+
 const int led = 2; // Led intégrée à l'ESP32
 AsyncWebServer server(80);
 void setup()
@@ -41,6 +42,9 @@ Serial.print("Adresse IP: ");
 Serial.println(WiFi.localIP());
 //--------------------------SERVEUR--------------------------
 /* Lorsque le serveur est actif , la page index.html est chargée */
+server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+request->send(SPIFFS, "/style.css", "text/css");
+});
 server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 {
 request->send(SPIFFS, "/index.html", "text/html");
